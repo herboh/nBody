@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3 uid="uid://cag0o1rt8kaol"]
+
+[ext_resource type="Script" uid="uid://cflxije57t6ih" path="res://script/Ship.gd" id="1_t11qm"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4jq4p"]
+size = Vector2(8, 14)
+
+[sub_resource type="ImageTexture" id="ImageTexture_t11qm"]
+
+[node name="Ship" type="RigidBody2D"]
+gravity_scale = 0.0
+linear_damp = 0.1
+angular_damp = 0.2
+script = ExtResource("1_t11qm")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_4jq4p")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-9, -10)
+scale = Vector2(18, 19)
+texture = SubResource("ImageTexture_t11qm")
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="."]
+position = Vector2(0, 9)
