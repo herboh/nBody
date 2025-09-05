@@ -13,10 +13,12 @@ var thrusting: bool = false
 func _ready():
 	current_fuel = max_fuel
 	setup_particles()
-	
-	# Set consistent mass (no more confusion with ship_mass)
 	mass = 1.0
 	set_gravity_scale(0)
+	#adding for testing, gives more pure output
+	linear_damp = 0.0
+	angular_damp = 0.0
+
 
 func setup_particles():
 	particles.emitting = false
@@ -47,9 +49,8 @@ func handle_input(delta):
 	# Thrust
 	thrusting = Input.is_action_pressed("thrust") and current_fuel > 0
 	if thrusting:
-		var thrust_direction = Vector2.RIGHT.rotated(rotation)
-		# Use impulse instead of force for more predictable thrust
-		apply_central_impulse(thrust_direction * thrust_power * delta)
+		var thrust_force = Vector2.RIGHT.rotated(rotation) * thrust_power
+		apply_central_force(thrust_force)
 		
 		current_fuel -= fuel_consumption_rate * delta
 		current_fuel = max(0, current_fuel)	

@@ -21,6 +21,7 @@ stretch_mode = 1
 
 [node name="Ship" parent="SolarSystem" instance=ExtResource("1_itxqv")]
 position = Vector2(100, 150)
+can_sleep = false
 linear_velocity = Vector2(0, 100)
 linear_damp = 0.0
 angular_damp = 0.0

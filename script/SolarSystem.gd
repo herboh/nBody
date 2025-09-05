@@ -6,7 +6,6 @@ extends Node2D
 @onready var trajectory_line = $TrajectoryLine
 @onready var ship = $Ship
 
-# Simplified constants
 const GRAVITY_CONSTANT: float = 100.0
 const MIN_DISTANCE: float = 10.0
 
@@ -18,8 +17,7 @@ func _ready():
 		if child is Planet:
 			planets.append(child)
 	fuel_bar.max_value = ship.max_fuel
-	
-	# Disable Godot's built-in gravity
+	#Disable built in gravity, but still leverage the rest of Godot Physics
 	ship.set_gravity_scale(0)
 
 func _physics_process(delta):
@@ -30,33 +28,30 @@ func _physics_process(delta):
 	update_ui()
 	
 func apply_gravity(delta):
-	# Calculate total gravitational acceleration (not force)
-	var total_acceleration = Vector2.ZERO
+	#gone back and forth on if this should calc force or accel
+	var total_force = Vector2.ZERO
 	
 	for planet in planets:
 		var direction = planet.global_position - ship.global_position
 		var distance = max(direction.length(), MIN_DISTANCE)
 		
-		# a = GM/r² (acceleration, not force)
-		var acceleration_magnitude = GRAVITY_CONSTANT * planet.mass / (distance * distance)
-		var acceleration = direction.normalized() * acceleration_magnitude
-		total_acceleration += acceleration	
+		# F = GMm/r² (force)
+		var force_magnitude = GRAVITY_CONSTANT * planet.mass * ship.mass / (distance * distance)
+		var force = direction.normalized() * force_magnitude
+		total_force += force
+		
+	ship.apply_central_force(total_force)
 	
-	ship.apply_central_impulse(total_acceleration * ship.mass * delta)
-	
+#This is my idea calculate default value for ship position at runtime
+#Goal is to simplify tweaking values, so that the ship always spawns with stable pos + velocity
+#could maybe also be done with radius + tangent
 func setup_stable_orbit(target_planet: Planet, orbital_distance: float):
-	"""Calculate and set up a stable circular orbit"""
-	# Calculate required orbital velocity: v = sqrt(GM/r)
 	var orbital_velocity = sqrt(GRAVITY_CONSTANT * target_planet.mass / orbital_distance)
 	
 	# Position ship to the left of planet
 	var planet_pos = target_planet.global_position
 	ship.global_position = planet_pos + Vector2(-orbital_distance, 0)
-	
-	# Set velocity for counterclockwise orbit (downward when left of planet)
 	ship.linear_velocity = Vector2(0, orbital_velocity)
-	
-	# Face the ship in direction of travel
 	ship.rotation = PI / 2  # Face downward
 	
 	print("Orbit setup - Distance: %d, Velocity: %.1f" % [orbital_distance, orbital_velocity])
