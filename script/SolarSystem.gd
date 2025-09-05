@@ -1,18 +1,26 @@
 extends Node2D
 
+@onready var fuel_bar = $CanvasLayer/UI/FuelBar
+@onready var speed_label = $CanvasLayer/UI/SpeedLabel
+@onready var status_label = $CanvasLayer/UI/StatusLabel
 @onready var ship = $Ship
+@onready var trajectory_line = $TrajectoryLine
+@onready var gravity = 1
 var planets: Array[Planet] = []
 
 func _ready():
-	# Find all planets in the scene
 	for child in get_children():
 		if child is Planet:
 			planets.append(child)
+	fuel_bar.max_value = ship.max_fuel
 
 func _physics_process(delta):
-	apply_gravity_to_ship()
-
-func apply_gravity_to_ship():
 	for planet in planets:
-		var gravity_force = planet.get_gravity_force(ship.global_position, ship.mass)
-		ship.apply_central_force(gravity_force)
+		var dir = planet.global_position - ship.global_position
+		var dist = dir.length()
+		var force = gravity * (planet.mass * ship.mass) / (dist * dist)
+		ship.apply_central_force(dir.normalized() * force)
+
+func update_ui():
+	fuel_bar.value = ship.current_fuel
+	speed_label.text = "Speed: %.0f" % ship.linear_velocity.length()
