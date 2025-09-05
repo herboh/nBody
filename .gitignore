@@ -2,3 +2,8 @@
 .godot/
 /android/
 addons/godot-vim
+icon.svg
+icon.svg.import
+.gitattributes
+.editorconfig
+script/*uid
