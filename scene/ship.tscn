@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://bppotx7ce0bht" path="res://assets/ship.png" id="2_gnaqg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4jq4p"]
-size = Vector2(8, 14)
+size = Vector2(12, 16)
 
 [node name="Ship" type="RigidBody2D"]
 gravity_scale = 0.0

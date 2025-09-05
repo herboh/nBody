@@ -20,13 +20,14 @@ texture = ExtResource("2_0ha60")
 stretch_mode = 1
 
 [node name="Ship" parent="SolarSystem" instance=ExtResource("1_itxqv")]
-position = Vector2(97, 181)
+position = Vector2(100, 150)
+linear_velocity = Vector2(0, 100)
+linear_damp = 0.0
+angular_damp = 0.0
 
 [node name="Planet" parent="SolarSystem" instance=ExtResource("3_brvut")]
-position = Vector2(121, 146)
-
-[node name="Planet2" parent="SolarSystem" instance=ExtResource("3_brvut")]
-position = Vector2(483, 140)
+position = Vector2(200, 150)
+radius = 100.0
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(320, 180)
@@ -35,14 +36,24 @@ position = Vector2(320, 180)
 
 [node name="Fuel" type="ProgressBar" parent="UI"]
 custom_minimum_size = Vector2(20, 20)
-offset_right = 4.0
-offset_bottom = 27.0
+offset_left = 10.0
+offset_top = 102.0
+offset_right = 54.0
+offset_bottom = 262.0
+step = 10.0
+value = 50.0
+rounded = true
+fill_mode = 3
 
 [node name="Speed" type="Label" parent="UI"]
 custom_minimum_size = Vector2(20, 50)
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 9.0
+offset_top = 7.0
+offset_right = 49.0
+offset_bottom = 57.0
 
 [node name="Status" type="Label" parent="UI"]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 302.0
+offset_top = 13.0
+offset_right = 342.0
+offset_bottom = 36.0
