@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://d4ju3t7tn4p7n"]
+[gd_scene load_steps=5 format=3 uid="uid://d4ju3t7tn4p7n"]
 
 [ext_resource type="PackedScene" uid="uid://cag0o1rt8kaol" path="res://scene/ship.tscn" id="1_itxqv"]
 [ext_resource type="Script" uid="uid://tsiux4pale7m" path="res://script/SolarSystem.gd" id="1_wp4xf"]
+[ext_resource type="Texture2D" uid="uid://bpj60xeep7b5h" path="res://assets/starfield_tile.png" id="2_0ha60"]
 [ext_resource type="PackedScene" uid="uid://eqv106qo08fm" path="res://scene/planet.tscn" id="3_brvut"]
 
 [node name="Main" type="Node2D"]
@@ -9,24 +10,39 @@
 [node name="SolarSystem" type="Node2D" parent="."]
 script = ExtResource("1_wp4xf")
 
+[node name="Backgroud" type="TextureRect" parent="SolarSystem"]
+clip_contents = true
+custom_minimum_size = Vector2(3000, 1600)
+offset_right = 256.0
+offset_bottom = 256.0
+scale = Vector2(0.25, 0.25)
+texture = ExtResource("2_0ha60")
+stretch_mode = 1
+
 [node name="Ship" parent="SolarSystem" instance=ExtResource("1_itxqv")]
-position = Vector2(151, 311)
+position = Vector2(97, 181)
 
 [node name="Planet" parent="SolarSystem" instance=ExtResource("3_brvut")]
-position = Vector2(-80, -166)
+position = Vector2(121, 146)
 
 [node name="Planet2" parent="SolarSystem" instance=ExtResource("3_brvut")]
-position = Vector2(561, -156)
+position = Vector2(483, 140)
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(576, 324)
+position = Vector2(320, 180)
 
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="Fuel" type="ProgressBar" parent="UI"]
+custom_minimum_size = Vector2(20, 20)
 offset_right = 4.0
 offset_bottom = 27.0
 
 [node name="Speed" type="Label" parent="UI"]
+custom_minimum_size = Vector2(20, 50)
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Status" type="Label" parent="UI"]
 offset_right = 40.0
 offset_bottom = 23.0

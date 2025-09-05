@@ -1,11 +1,10 @@
 [gd_scene load_steps=4 format=3 uid="uid://cag0o1rt8kaol"]
 
 [ext_resource type="Script" uid="uid://cflxije57t6ih" path="res://script/Ship.gd" id="1_t11qm"]
+[ext_resource type="Texture2D" uid="uid://bppotx7ce0bht" path="res://assets/ship.png" id="2_gnaqg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4jq4p"]
 size = Vector2(8, 14)
-
-[sub_resource type="ImageTexture" id="ImageTexture_t11qm"]
 
 [node name="Ship" type="RigidBody2D"]
 gravity_scale = 0.0
@@ -17,9 +16,9 @@ script = ExtResource("1_t11qm")
 shape = SubResource("RectangleShape2D_4jq4p")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(-9, -10)
-scale = Vector2(18, 19)
-texture = SubResource("ImageTexture_t11qm")
+texture_filter = 1
+rotation = 3.14159
+texture = ExtResource("2_gnaqg")
 
 [node name="CPUParticles2D" type="CPUParticles2D" parent="."]
 position = Vector2(0, 9)
