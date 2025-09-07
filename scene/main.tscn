@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://d4ju3t7tn4p7n"]
 
 [ext_resource type="PackedScene" uid="uid://cag0o1rt8kaol" path="res://scene/ship.tscn" id="1_itxqv"]
-[ext_resource type="Script" uid="uid://tsiux4pale7m" path="res://script/SolarSystem.gd" id="1_wp4xf"]
+[ext_resource type="Script" uid="uid://d3bh7tcpr3fjf" path="res://script/SolarSystem.gd" id="1_wp4xf"]
 [ext_resource type="Texture2D" uid="uid://bpj60xeep7b5h" path="res://assets/starfield_tile.png" id="2_0ha60"]
 [ext_resource type="PackedScene" uid="uid://eqv106qo08fm" path="res://scene/planet.tscn" id="3_brvut"]
 
@@ -23,8 +23,6 @@ stretch_mode = 1
 position = Vector2(100, 150)
 can_sleep = false
 linear_velocity = Vector2(0, 100)
-linear_damp = 0.0
-angular_damp = 0.0
 
 [node name="Planet" parent="SolarSystem" instance=ExtResource("3_brvut")]
 position = Vector2(200, 150)

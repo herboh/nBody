@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cag0o1rt8kaol"]
 
-[ext_resource type="Script" uid="uid://cflxije57t6ih" path="res://script/Ship.gd" id="1_t11qm"]
+[ext_resource type="Script" uid="uid://efgijko8t3j6" path="res://script/Ship.gd" id="1_t11qm"]
 [ext_resource type="Texture2D" uid="uid://bppotx7ce0bht" path="res://assets/ship.png" id="2_gnaqg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4jq4p"]
@@ -10,13 +10,13 @@ size = Vector2(12, 16)
 gravity_scale = 0.0
 script = ExtResource("1_t11qm")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_4jq4p")
-
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture_filter = 1
 rotation = 3.14159
 texture = ExtResource("2_gnaqg")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_4jq4p")
 
 [node name="CPUParticles2D" type="CPUParticles2D" parent="."]
 position = Vector2(0, 9)
