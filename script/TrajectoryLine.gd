@@ -14,8 +14,8 @@ func _ready():
 	width = 2.0
 	joint_mode = Line2D.LINE_JOINT_ROUND
 	_grad.add_point(0.0, Color(1,1,1,0.8))
-	_grad.add_point(0.7, Color(0.8,0.8,1,0.4))
-	_grad.add_point(1.0, Color(1,1,1,0.1))
+	_grad.add_point(0.7, Color(0.3,0.3,1,0.4))
+	_grad.add_point(1.0, Color(0.8,0.1,0.1,0.1))
 	gradient = _grad
 	
 func _process(delta: float):
@@ -38,7 +38,7 @@ func _process(delta: float):
 	var data: OrbitalPhysics.OrbitalData = OrbitalPhysics.analyze_orbit(ship.global_position, ship.linear_velocity, planets)
 	var horizon: float = prediction_time_fallback
 	if data and data.primary and data.period > 0.0:
-		horizon = clamp(data.period, 2.0, 60.0)
+		horizon = clamp(data.period * 1.5, 5.0, 60.0)
 
 	# Match physics tick for better agreement
 	# Calculate adaptive time step

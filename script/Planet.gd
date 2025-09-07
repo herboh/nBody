@@ -1,6 +1,6 @@
 extends StaticBody2D
 
-@export var mass: float = 1000.0
+@export var mass: float = 900.0
 @export var radius: float = 50.0
 
 func _ready():

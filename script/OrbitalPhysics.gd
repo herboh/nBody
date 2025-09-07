@@ -2,7 +2,8 @@ extends Node
 
 # Simplified Orbital Physics System
 const GRAVITY_CONSTANT: float = 1000.0
-const MIN_DISTANCE: float = 10.0
+const MIN_DISTANCE: float = 2.0
+const SOFTENING_FACTOR: float = 12.0
 
 enum OrbitalState { UNKNOWN, STABLE, ELLIPTICAL, DECAY, ESCAPE }
 
@@ -15,7 +16,7 @@ class OrbitalData:
 	var is_stable: bool = false
 
 func get_gravity_at(pos: Vector2, sources: Array) -> Vector2:
-	"""Calculate gravitational acceleration from all sources"""
+	"""Calculate gravitational acceleration with distance-based influence limiting"""
 	var accel := Vector2.ZERO
 	
 	for source in sources:
@@ -23,15 +24,34 @@ func get_gravity_at(pos: Vector2, sources: Array) -> Vector2:
 			continue
 			
 		var delta: Vector2 = source.global_position - pos
-		var dist_sq: float = delta.length_squared()
-		var dist: float = max(sqrt(dist_sq), MIN_DISTANCE)
+		var dist: float = delta.length()
+		dist = max(dist, MIN_DISTANCE)
 		
-		# F = GMm/r^2, so a = GM/r^2
-		var acceleration_magnitude: float = GRAVITY_CONSTANT * source.mass / (dist * dist)
+		# Get planet radius for influence calculation
+		var planet_radius: float = 50.0
+		if source.has_method("get_radius"):
+			planet_radius = source.get_radius()
+		elif "radius" in source:
+			planet_radius = source.radius
+		
+		# Define influence radius (3-4x planet radius for local dominance)
+		var influence_radius: float = planet_radius * 3.5
+		
+		# Calculate base gravity
+		var base_acceleration: float = GRAVITY_CONSTANT * source.mass / (dist * dist)
+		
+		# Apply smooth falloff beyond influence radius
+		var influence_factor: float = 1.0
+		if dist > influence_radius:
+			# Smooth exponential falloff beyond influence radius
+			var excess_distance: float = dist - influence_radius
+			var falloff_rate: float = 7  # Adjust this for how quickly gravity fades
+			influence_factor = exp(-falloff_rate * excess_distance)
+		
+		var acceleration_magnitude: float = base_acceleration * influence_factor
 		accel += delta.normalized() * acceleration_magnitude
 	
-	return accel
-
+	return accel	
 func analyze_orbit(pos: Vector2, vel: Vector2, sources: Array) -> OrbitalData:
 	"""Analyze orbital characteristics relative to primary body"""
 	var data := OrbitalData.new()
@@ -113,11 +133,9 @@ func predict_trajectory_verlet(pos: Vector2, vel: Vector2, sources: Array, total
 	var current_accel: Vector2 = get_gravity_at(current_pos, sources)
 
 	for i in range(steps):
-		# Velocity-Verlet integration step
+		# Velocity-Verlet integration
 		# Position: x(t+dt) = x(t) + v(t)*dt + 0.5*a(t)*dt^2
 		current_pos += current_vel * dt + 0.5 * current_accel * dt * dt
-		
-		# Calculate new acceleration at new position
 		var new_accel: Vector2 = get_gravity_at(current_pos, sources)
 		
 		# Velocity: v(t+dt) = v(t) + 0.5*(a(t) + a(t+dt))*dt
@@ -131,14 +149,14 @@ func predict_trajectory_verlet(pos: Vector2, vel: Vector2, sources: Array, total
 			if not source:
 				continue
 				
-			var collision_radius: float = 50.0  # Default
+			var collision_radius: float = 25.0  # Default
 			if source.has_method("get_radius"):
 				collision_radius = source.get_radius()
 			elif "radius" in source:
 				collision_radius = source.radius
 			
 			var distance_to_body: float = (current_pos - source.global_position).length()
-			if distance_to_body < collision_radius * 1.1:  # Small margin for collision
+			if distance_to_body < collision_radius * 0.5:  # Small margin for collision
 				return points
 
 	return points
@@ -162,6 +180,20 @@ func place_in_orbit(body: RigidBody2D, planet: Node2D, radius: float) -> void:
 	if body.has_method("set_angular_velocity"):
 		var angular_vel: float = speed / radius
 		body.angular_velocity = angular_vel
+
+# Helper function to get recommended orbital parameters for your scale
+func get_stable_orbit_params(planet_mass: float, desired_radius: float) -> Dictionary:
+	"""Get recommended parameters for stable orbits at 640x360 scale"""
+	var speed: float = sqrt(GRAVITY_CONSTANT * planet_mass / desired_radius)
+	var period: float = 2.0 * PI * sqrt(pow(desired_radius, 3) / (GRAVITY_CONSTANT * planet_mass))
+	
+	return {
+		"orbital_speed": speed,
+		"orbital_period": period,
+		"recommended_ship_mass": 1.0,  # Light ships are easier to control
+		"safe_minimum_radius": 26.0,   # Just above surface for close orbits
+		"recommended_radius_range": Vector2(30.0, 120.0)  # From surface-skimming to distant
+	}
 
 func get_status_text(data: OrbitalData) -> String:
 	"""Generate status text for UI display"""
