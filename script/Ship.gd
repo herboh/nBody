@@ -29,7 +29,7 @@ func setup_particles():
 func _physics_process(delta):
 	handle_input(delta)
 	update_particles()	
-	
+
 func handle_input(delta):
 	# Rotation
 	var rotation_input = 0.0
@@ -39,7 +39,7 @@ func handle_input(delta):
 		rotation_input += 1.0
 	if rotation_input != 0:
 		rotation += rotation_input * turn_speed * delta
-	
+
 	# Thrust
 	thrusting = Input.is_action_pressed("thrust") and current_fuel > 0
 	if thrusting:
@@ -48,7 +48,7 @@ func handle_input(delta):
 		
 		current_fuel -= fuel_consumption_rate * delta
 		current_fuel = max(0, current_fuel)	
-		
+
 func update_particles():
 	particles.emitting = thrusting
 	particles.position = Vector2(0, 12)

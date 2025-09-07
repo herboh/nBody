@@ -27,10 +27,13 @@ can_sleep = false
 linear_velocity = Vector2(0, 100)
 
 [node name="Planet" parent="SolarSystem" instance=ExtResource("3_brvut")]
-position = Vector2(300, 150)
+position = Vector2(471, 273)
 
 [node name="OrbitDebug" type="Node" parent="SolarSystem"]
 script = ExtResource("4_brvut")
+
+[node name="Planet2" parent="SolarSystem" instance=ExtResource("3_brvut")]
+position = Vector2(125, 131)
 
 [node name="TrajectoryLine" type="Line2D" parent="SolarSystem"]
 script = ExtResource("5_4j5ol")
