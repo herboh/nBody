@@ -1,7 +1,7 @@
 extends RigidBody2D
 
-@export var thrust_power: float = 10.0
-@export var turn_speed: float = 3.0
+@export var thrust_power: float = 30.0
+@export var turn_speed: float = 6.0
 @export var max_fuel: float = 100.0
 @export var fuel_consumption_rate: float = 10.0
 
@@ -13,12 +13,6 @@ var thrusting: bool = false
 func _ready():
 	current_fuel = max_fuel
 	setup_particles()
-	mass = 1.0
-	#set_gravity_scale(0)
-	#adding for testing, gives more pure output
-	linear_damp = 0.0
-	angular_damp = 0.0
-	linear_velocity = Vector2.DOWN*(20)
 
 func setup_particles():
 	particles.emitting = false

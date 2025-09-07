@@ -1,14 +1,16 @@
-[gd_scene load_steps=5 format=3 uid="uid://d4ju3t7tn4p7n"]
+[gd_scene load_steps=7 format=3 uid="uid://d4ju3t7tn4p7n"]
 
+[ext_resource type="Script" uid="uid://tsiux4pale7m" path="res://script/SolarSystem.gd" id="1_0ha60"]
 [ext_resource type="PackedScene" uid="uid://cag0o1rt8kaol" path="res://scene/ship.tscn" id="1_itxqv"]
-[ext_resource type="Script" uid="uid://tsiux4pale7m" path="res://script/SolarSystem.gd" id="1_wp4xf"]
 [ext_resource type="Texture2D" uid="uid://bpj60xeep7b5h" path="res://assets/starfield_tile.png" id="2_0ha60"]
 [ext_resource type="PackedScene" uid="uid://eqv106qo08fm" path="res://scene/planet.tscn" id="3_brvut"]
+[ext_resource type="Script" uid="uid://cd0kmh7fxfeko" path="res://script/OrbitDebug.gd" id="4_brvut"]
+[ext_resource type="Script" uid="uid://ccey22v3wjvvc" path="res://script/TrajectoryLine.gd" id="5_4j5ol"]
 
 [node name="Main" type="Node2D"]
 
 [node name="SolarSystem" type="Node2D" parent="."]
-script = ExtResource("1_wp4xf")
+script = ExtResource("1_0ha60")
 
 [node name="Backgroud" type="TextureRect" parent="SolarSystem"]
 clip_contents = true
@@ -20,15 +22,18 @@ texture = ExtResource("2_0ha60")
 stretch_mode = 1
 
 [node name="Ship" parent="SolarSystem" instance=ExtResource("1_itxqv")]
-position = Vector2(100, 150)
+position = Vector2(101, 159)
 can_sleep = false
-linear_velocity = Vector2(0, 6)
-thrust_power = 100.0
+linear_velocity = Vector2(0, 100)
 
 [node name="Planet" parent="SolarSystem" instance=ExtResource("3_brvut")]
 position = Vector2(300, 150)
 
-[node name="Line2D" type="Line2D" parent="SolarSystem"]
+[node name="OrbitDebug" type="Node" parent="SolarSystem"]
+script = ExtResource("4_brvut")
+
+[node name="TrajectoryLine" type="Line2D" parent="SolarSystem"]
+script = ExtResource("5_4j5ol")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(320, 180)
@@ -53,7 +58,7 @@ offset_top = 7.0
 offset_right = 49.0
 offset_bottom = 57.0
 
-[node name="Status" type="Label" parent="UI"]
+[node name="OrbitalStatus" type="Label" parent="UI"]
 offset_left = 302.0
 offset_top = 13.0
 offset_right = 342.0
