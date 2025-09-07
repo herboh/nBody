@@ -3,7 +3,6 @@ extends Node2D
 
 @onready var ship: RigidBody2D = $Ship
 @onready var trajectory_line = $TrajectoryLine
-@onready var ui_manager = $UIManager
 
 var planets: Array[Node2D] = []
 
@@ -19,9 +18,17 @@ func place_ship():
 func discover_planets():
 	planets.clear()
 	for child in get_children():
+		print("Checking child: ", child.name, " | Type: ", child.get_class())
+		print("  Has get_radius: ", child.has_method("get_radius"))
+		print("  Has get_mass: ", child.has_method("get_mass"))
+		print("  Script: ", child.get_script())
+		
 		if child.has_method("get_radius") and child.has_method("get_mass"):
 			planets.append(child)
-
+			print("  ✓ Added as planet")
+		else:
+			print("  ✗ Skipped - missing methods")
+		print("---")
 func setup_trajectory_system():
 	trajectory_line.ship = ship
 	trajectory_line.physics_world = self
