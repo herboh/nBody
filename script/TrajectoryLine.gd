@@ -1,40 +1,55 @@
 extends Line2D
 
-@export var prediction_time: float = 12.0
-@export var prediction_steps: int = 150
-@export var orbit_color: Color = Color.WHITE
-@export var escape_color: Color = Color.ORANGE
+@export var prediction_time_fallback: float = 12.0
+@export var max_points: int = 600
+@export var use_primary_only: bool = false
 
 var ship: RigidBody2D
 var physics_world: Node
+var _grad := Gradient.new()
+var _update_timer: float = 0.0
 
 func _ready():
 	width = 2.0
 	joint_mode = Line2D.LINE_JOINT_ROUND
+	_grad.add_point(0.0, Color(1,1,1,0.8))
+	_grad.add_point(1.0, Color(1,1,1,0.1))
+	gradient = _grad
 
-func _process(_delta):
-	if not ship or not physics_world: return
+func _process(delta: float):
+	if not ship or not physics_world:
+		return
+	
+	# Update every 3 frames instead of every frame for performance
+	_update_timer += delta
+	if _update_timer < 0.05:
+		return
+	_update_timer = 0.0
 	
 	clear_points()
-	
-	var planets = physics_world.get_planets() if physics_world.has_method("get_planets") else []
-	var data = OrbitalPhysics.analyze_orbit(ship.global_position, ship.linear_velocity, planets)
-	
-	# Set gradient based on orbit type
-	var grad = Gradient.new()
-	var color = orbit_color if data.is_stable else escape_color
-	grad.add_point(0.0, Color(color.r, color.g, color.b, 0.8))
-	grad.add_point(1.0, Color(color.r, color.g, color.b, 0.1))
-	gradient = grad
-	
-	# Add trajectory points
-	var trajectory = OrbitalPhysics.predict_trajectory(
-		ship.global_position, ship.linear_velocity, planets, prediction_time, prediction_steps
-	)
-	
-	for point in trajectory:
-		add_point(point)
-		# For stable orbits, stop if we complete the orbit
-		if data.is_stable and get_point_count() > 20:
-			if (point - ship.global_position).length() < 30:
-				break
+
+	var planets: Array = physics_world.get_planets()
+	if planets.is_empty():
+		return
+
+	# Analyze current orbit to get primary + period
+	var data: OrbitalPhysics.OrbitalData = OrbitalPhysics.analyze_orbit(ship.global_position, ship.linear_velocity, planets)
+	var horizon: float = prediction_time_fallback
+	if data and data.primary and data.period > 0.0:
+		horizon = clamp(data.period, 2.0, 60.0)
+
+	# Match physics tick for better agreement
+	var dt: float = 1.0 / float(Engine.physics_ticks_per_second)
+	var steps: int = int(clamp(horizon / dt, 32, max_points))
+
+	var path: PackedVector2Array
+	if use_primary_only and data.primary:
+		path = OrbitalPhysics.predict_trajectory(ship.global_position, ship.linear_velocity, [data.primary], horizon, steps)
+	else:
+		path = OrbitalPhysics.predict_trajectory(ship.global_position, ship.linear_velocity, planets, horizon, steps)
+
+	if path.size() < 2:
+		return
+
+	for p: Vector2 in path:
+		add_point(p)
