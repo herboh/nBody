@@ -12,6 +12,7 @@ var thrusting: bool = false
 
 func _ready():
 	current_fuel = max_fuel
+	mass = 1.0
 	setup_particles()
 
 func setup_particles():

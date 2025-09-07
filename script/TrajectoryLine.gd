@@ -31,61 +31,28 @@ func update_trajectory():
 	var vel = ship.linear_velocity
 	var start_pos = pos
 	
-	# Check if we're in stable orbit or escaping
-	var is_stable_orbit = check_stable_orbit(pos, vel)
+	# Get planets from physics world
+	var planets = physics_world.get_planets() if physics_world.has_method("get_planets") else []
+
+	# Check if we're in stable orbit
+	var is_stable_orbit = OrbitalPhysics.is_trajectory_stable_orbit(pos, vel, planets)
 	
 	# Set up gradient based on orbit type
 	setup_gradient(is_stable_orbit)
 	
-	var dt = prediction_time / prediction_steps
-	var max_steps = prediction_steps
+	# Use global physics for trajectory prediction
+	var trajectory_points = OrbitalPhysics.predict_trajectory(
+		pos, vel, planets, prediction_time, prediction_steps
+	)
 	
-	# For stable orbits, try to complete one full orbit
-	if is_stable_orbit:
-		max_steps = prediction_steps * 2  # Allow longer prediction for full orbit
-	
-	for i in max_steps:
-		add_point(pos)
+	# Add points to line
+	for point in trajectory_points:
+		add_point(point)
 		
-		# Simple physics integration
-		var accel = physics_world.calculate_gravity_acceleration_at(pos)
-		vel += accel * dt
-		pos += vel * dt
-		
-		# Stop if we hit a planet
-		if physics_world.get_min_distance_to_gravity_source(pos) < 50:
-			break
-			
-		# For stable orbits, stop when we complete the orbit
-		if is_stable_orbit and i > 20:  # Don't check too early
-			if (pos - start_pos).length() < 30:  # Close to start position
+		# For stable orbits, check if we've completed the orbit
+		if is_stable_orbit and get_point_count() > 20:
+			if (point - start_pos).length() < 30:  # Close to start position
 				break
-
-func check_stable_orbit(pos: Vector2, vel: Vector2) -> bool:
-	# Find closest planet (assumes it's the primary body we're orbiting)
-	var closest_planet = null
-	var min_distance = INF
-	
-	for planet in physics_world.planets:
-		var dist = (pos - planet.global_position).length()
-		if dist < min_distance:
-			min_distance = dist
-			closest_planet = planet
-	
-	if not closest_planet:
-		return false
-	
-	# Calculate orbital energy
-	var r = min_distance
-	var v = vel.length()
-	var mu = physics_world.GRAVITY_CONSTANT * closest_planet.mass
-	
-	var kinetic_energy = 0.5 * v * v
-	var potential_energy = -mu / r
-	var total_energy = kinetic_energy + potential_energy
-	
-	# Negative energy = bound orbit, positive = escape
-	return total_energy < 0
 
 func setup_gradient(is_stable: bool):
 	var grad = Gradient.new()

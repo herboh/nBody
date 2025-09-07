@@ -8,3 +8,6 @@ class_name Planet
 
 func _ready():
 	return
+
+func get_radius() -> float:
+	return radius

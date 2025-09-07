@@ -15,6 +15,10 @@ run/main_scene="uid://d4ju3t7tn4p7n"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+OrbitalPhysics="*res://script/OrbitalPhysics.gd"
+
 [display]
 
 window/size/viewport_width=640
