@@ -1,6 +1,6 @@
 extends RigidBody2D
 
-@export var thrust_power: float = 500.0  # Increased for better feel
+@export var thrust_power: float = 10.0
 @export var turn_speed: float = 3.0
 @export var max_fuel: float = 100.0
 @export var fuel_consumption_rate: float = 10.0
@@ -14,11 +14,11 @@ func _ready():
 	current_fuel = max_fuel
 	setup_particles()
 	mass = 1.0
-	set_gravity_scale(0)
+	#set_gravity_scale(0)
 	#adding for testing, gives more pure output
 	linear_damp = 0.0
 	angular_damp = 0.0
-
+	linear_velocity = Vector2.DOWN*(20)
 
 func setup_particles():
 	particles.emitting = false
@@ -49,7 +49,7 @@ func handle_input(delta):
 	# Thrust
 	thrusting = Input.is_action_pressed("thrust") and current_fuel > 0
 	if thrusting:
-		var thrust_force = Vector2.RIGHT.rotated(rotation) * thrust_power
+		var thrust_force = Vector2.UP.rotated(rotation) * thrust_power
 		apply_central_force(thrust_force)
 		
 		current_fuel -= fuel_consumption_rate * delta
@@ -57,5 +57,4 @@ func handle_input(delta):
 		
 func update_particles():
 	particles.emitting = thrusting
-	particles.direction = Vector2(-1, 0)
-	particles.position = Vector2(-15, 0)
+	particles.position = Vector2(0, 12)

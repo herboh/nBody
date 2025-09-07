@@ -6,7 +6,7 @@ extends Node2D
 @onready var trajectory_line = $TrajectoryLine
 @onready var ship = $Ship
 
-const GRAVITY_CONSTANT: float = 100.0
+const GRAVITY_CONSTANT: float = 50000.0
 const MIN_DISTANCE: float = 10.0
 
 var planets: Array[Planet] = []
@@ -17,8 +17,11 @@ func _ready():
 		if child is Planet:
 			planets.append(child)
 	fuel_bar.max_value = ship.max_fuel
-	#Disable built in gravity, but still leverage the rest of Godot Physics
 	ship.set_gravity_scale(0)
+	
+	# Put ship in orbit around first planet
+	if planets.size() > 0:
+		put_ship_in_circular_orbit(planets[0], 200.0)
 
 func _physics_process(delta):
 	if game_over:
@@ -28,35 +31,26 @@ func _physics_process(delta):
 	update_ui()
 	
 func apply_gravity(delta):
-	#gone back and forth on if this should calc force or accel
 	var total_force = Vector2.ZERO
 	
 	for planet in planets:
 		var direction = planet.global_position - ship.global_position
 		var distance = max(direction.length(), MIN_DISTANCE)
 		
-		# F = GMm/r² (force)
-		var force_magnitude = GRAVITY_CONSTANT * planet.mass * ship.mass / (distance * distance)
+		var force_magnitude = GRAVITY_CONSTANT * planet.mass / (distance * distance)
 		var force = direction.normalized() * force_magnitude
 		total_force += force
 		
 	ship.apply_central_force(total_force)
-	
-#This is my idea calculate default value for ship position at runtime
-#Goal is to simplify tweaking values, so that the ship always spawns with stable pos + velocity
-#could maybe also be done with radius + tangent
-func setup_stable_orbit(target_planet: Planet, orbital_distance: float):
-	var orbital_velocity = sqrt(GRAVITY_CONSTANT * target_planet.mass / orbital_distance)
-	
-	# Position ship to the left of planet
-	var planet_pos = target_planet.global_position
-	ship.global_position = planet_pos + Vector2(-orbital_distance, 0)
-	ship.linear_velocity = Vector2(0, orbital_velocity)
-	ship.rotation = PI / 2  # Face downward
-	
-	print("Orbit setup - Distance: %d, Velocity: %.1f" % [orbital_distance, orbital_velocity])
-	
 
+func put_ship_in_circular_orbit(planet: Node2D, radius: float):
+	var center = planet.global_position
+	var pos = center + Vector2.RIGHT * radius
+	ship.global_position = pos
+	var v_mag = sqrt(GRAVITY_CONSTANT * planet.mass / radius)
+	var tangent = (pos - center).normalized().rotated(PI/2)
+	ship.linear_velocity = tangent * v_mag
+	
 func update_ui():
 	fuel_bar.value = ship.current_fuel
 	speed_label.text = "Speed: %.0f px/s" % ship.linear_velocity.length()
