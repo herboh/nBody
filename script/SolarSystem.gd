@@ -1,41 +1,49 @@
+# SolarSystem.gd - Clean coordinator using streamlined OrbitalPhysics
 extends Node2D
 
-@onready var ui = $"../UI"
 @onready var ship: RigidBody2D = $Ship
 @onready var trajectory_line = $TrajectoryLine
+@onready var ui_manager = $UIManager
 
-var planets: Array = []  # Array of Planet nodes
-var orbital_data: OrbitalPhysics.OrbitalData
-var analysis_timer: float = 0.0
+var planets: Array[Node2D] = []
 
 func _ready():
-	for child in get_children():
-		if child.has_method("get_radius") and child.has_method("get_global_position"):
-			planets.append(child)
-			print("Found planet: ", child.name)
-	
+	discover_planets()
+	place_ship()
+	setup_trajectory_system()
+
+func place_ship():
 	if planets.size() > 0:
 		OrbitalPhysics.place_in_orbit(ship, planets[0], 200.0)
-	
+
+func discover_planets():
+	planets.clear()
+	for child in get_children():
+		if child.has_method("get_radius") and child.has_method("get_mass"):
+			planets.append(child)
+
+func setup_trajectory_system():
 	trajectory_line.ship = ship
 	trajectory_line.physics_world = self
-	
-	orbital_data = OrbitalPhysics.OrbitalData.new()
 
 func _physics_process(delta: float):
-	# Apply gravity
-	var impulse: Vector2 = OrbitalPhysics.get_gravity_at(ship.global_position, planets) * ship.mass * delta
-	ship.apply_central_impulse(impulse)
-	
-	# Update analysis periodically
-	analysis_timer += delta
-	if analysis_timer >= 0.1:
-		analysis_timer = 0.0
-		orbital_data = OrbitalPhysics.analyze_orbit(ship.global_position, ship.linear_velocity, planets)
-	
-	# Update UI
-	ui.get_node("Fuel").value = ship.current_fuel
-	ui.get_node("Speed").text = "Speed: %.0f px/s" % ship.linear_velocity.length()
+	apply_gravitational_forces(delta)
+	update_orbital_analysis()
 
-func get_planets() -> Array:
+func apply_gravitational_forces(delta: float):
+	var gravity_acceleration = OrbitalPhysics.get_gravity_at(ship.global_position, planets)
+	var impulse = gravity_acceleration * ship.mass * delta
+	ship.apply_central_impulse(impulse)
+
+func update_orbital_analysis():
+	OrbitalPhysics.update_orbital_analysis(ship, planets)
+
+# Public interface for other systems
+func get_ship() -> RigidBody2D:
+	return ship
+
+func get_planets() -> Array[Node2D]:
 	return planets
+
+func get_current_orbital_data() -> OrbitalPhysics.OrbitalData:
+	return OrbitalPhysics.get_cached_orbital_data()

@@ -1,10 +1,28 @@
+# OrbitalPhysics.gd - Streamlined physics + orbital analysis
 extends Node
 
-# Simplified Orbital Physics System
-const GRAVITY_CONSTANT: float = 1000.0
+# === CORE PHYSICS CONSTANTS ===
+const GRAVITY_CONSTANT: float = 200.0
 const MIN_DISTANCE: float = 2.0
-const SOFTENING_FACTOR: float = 12.0
 
+# Gravity influence system
+const INFLUENCE_RADIUS_MULTIPLIER: float = 3.5
+const GRAVITY_FALLOFF_RATE: float = 0.8
+
+# Orbital classification thresholds
+const STABLE_ECCENTRICITY_THRESHOLD: float = 0.2
+const ELLIPTICAL_ECCENTRICITY_THRESHOLD: float = 0.8
+const CRASH_RADIUS_MULTIPLIER: float = 1.5
+const STABLE_DISTANCE_MULTIPLIER: float = 3.0
+const SAFE_PERIAPSIS_MULTIPLIER: float = 2.0
+
+# Analysis caching (built-in OrbitalAnalyzer functionality)
+const POSITION_THRESHOLD: float = 5.0
+const VELOCITY_THRESHOLD: float = 10.0
+const MIN_ANALYSIS_INTERVAL: float = 0.1
+const MAX_ANALYSIS_INTERVAL: float = 1.0
+
+# === DATA STRUCTURES ===
 enum OrbitalState { UNKNOWN, STABLE, ELLIPTICAL, DECAY, ESCAPE }
 
 class OrbitalData:
@@ -15,8 +33,19 @@ class OrbitalData:
 	var primary: Node2D = null
 	var is_stable: bool = false
 
+# === ORBITAL ANALYSIS CACHE ===
+var _cached_orbital_data: OrbitalData
+var _last_analysis_position: Vector2
+var _last_analysis_velocity: Vector2
+var _last_analysis_time: float = 0.0
+
+func _ready():
+	_cached_orbital_data = OrbitalData.new()
+
+# === CORE PHYSICS FUNCTIONS ===
+
 func get_gravity_at(pos: Vector2, sources: Array) -> Vector2:
-	"""Calculate gravitational acceleration with distance-based influence limiting"""
+	"""Calculate gravitational acceleration at position"""
 	var accel := Vector2.ZERO
 	
 	for source in sources:
@@ -24,103 +53,26 @@ func get_gravity_at(pos: Vector2, sources: Array) -> Vector2:
 			continue
 			
 		var delta: Vector2 = source.global_position - pos
-		var dist: float = delta.length()
-		dist = max(dist, MIN_DISTANCE)
+		var dist: float = max(delta.length(), MIN_DISTANCE)
 		
-		# Get planet radius for influence calculation
-		var planet_radius: float = 50.0
-		if source.has_method("get_radius"):
-			planet_radius = source.get_radius()
-		elif "radius" in source:
-			planet_radius = source.radius
+		var planet_radius: float = source.get_radius()
+		var planet_mass: float = source.get_mass()
+		var influence_radius: float = planet_radius * INFLUENCE_RADIUS_MULTIPLIER
 		
-		# Define influence radius (3-4x planet radius for local dominance)
-		var influence_radius: float = planet_radius * 3.5
-		
-		# Calculate base gravity
-		var base_acceleration: float = GRAVITY_CONSTANT * source.mass / (dist * dist)
-		
-		# Apply smooth falloff beyond influence radius
+		# Base gravity with smooth falloff
+		var base_acceleration: float = GRAVITY_CONSTANT * planet_mass / (dist * dist)
 		var influence_factor: float = 1.0
+		
 		if dist > influence_radius:
-			# Smooth exponential falloff beyond influence radius
 			var excess_distance: float = dist - influence_radius
-			var falloff_rate: float = 7  # Adjust this for how quickly gravity fades
-			influence_factor = exp(-falloff_rate * excess_distance)
+			influence_factor = exp(-GRAVITY_FALLOFF_RATE * excess_distance)
 		
-		var acceleration_magnitude: float = base_acceleration * influence_factor
-		accel += delta.normalized() * acceleration_magnitude
+		accel += delta.normalized() * base_acceleration * influence_factor
 	
-	return accel	
-func analyze_orbit(pos: Vector2, vel: Vector2, sources: Array) -> OrbitalData:
-	"""Analyze orbital characteristics relative to primary body"""
-	var data := OrbitalData.new()
-	
-	# Find primary body (strongest gravitational influence)
-	var max_influence: float = 0.0
-	for body in sources:
-		if not body or not body.has_method("get_global_position"):
-			continue
-			
-		var dist: float = (pos - body.global_position).length()
-		var influence: float = body.mass / (dist * dist)
-		if influence > max_influence:
-			max_influence = influence
-			data.primary = body
-	
-	if not data.primary:
-		return data
-	
-	# Calculate orbital parameters relative to primary
-	var r: Vector2 = pos - data.primary.global_position
-	var dist: float = r.length()
-	var mu: float = GRAVITY_CONSTANT * data.primary.mass
-	
-	# Specific orbital energy
-	data.energy = 0.5 * vel.length_squared() - mu / dist
-	
-	# Eccentricity vector calculation
-	var v_squared: float = vel.length_squared()
-	var r_dot_v: float = r.dot(vel)
-	var e_vec: Vector2 = ((v_squared - mu/dist) * r - r_dot_v * vel) / mu
-	data.eccentricity = e_vec.length()
-	
-	# Get body radius for collision detection
-	var body_radius: float = 50.0  # Default
-	if data.primary.has_method("get_radius"):
-		body_radius = data.primary.get_radius()
-	elif "radius" in data.primary:
-		body_radius = data.primary.radius
-	
-	# Calculate periapsis for bound orbits
-	var periapsis: float = INF
-	if data.energy < 0 and data.eccentricity < 1.0:
-		var a: float = -mu / (2.0 * data.energy)  # Semi-major axis
-		periapsis = a * (1.0 - data.eccentricity)
-	
-	# Classify orbital state
-	if data.energy >= 0:
-		data.state = OrbitalState.ESCAPE
-	elif periapsis < body_radius * 1.5:  # Will crash
-		data.state = OrbitalState.DECAY
-	elif data.eccentricity < 0.2 and dist > body_radius * 3.0:
-		data.state = OrbitalState.STABLE
-		data.is_stable = true
-	elif data.eccentricity < 0.8 and periapsis > body_radius * 2.0:
-		data.state = OrbitalState.ELLIPTICAL
-		data.is_stable = true
-	else:
-		data.state = OrbitalState.DECAY
-		
-	# Calculate orbital period for bound orbits
-	if data.energy < 0 and data.eccentricity < 1.0:
-		var a: float = -mu / (2.0 * data.energy)
-		data.period = 2.0 * PI * sqrt(pow(a, 3) / mu)
-	
-	return data
+	return accel
 
 func predict_trajectory_verlet(pos: Vector2, vel: Vector2, sources: Array, total_time: float, steps: int) -> PackedVector2Array:
-	"""Predict trajectory using Velocity-Verlet integration with all gravitational sources"""
+	"""Predict trajectory using Velocity-Verlet integration"""
 	var points: PackedVector2Array = PackedVector2Array()
 	points.append(pos)
 	
@@ -133,30 +85,20 @@ func predict_trajectory_verlet(pos: Vector2, vel: Vector2, sources: Array, total
 	var current_accel: Vector2 = get_gravity_at(current_pos, sources)
 
 	for i in range(steps):
-		# Velocity-Verlet integration
-		# Position: x(t+dt) = x(t) + v(t)*dt + 0.5*a(t)*dt^2
+		# Velocity-Verlet step
 		current_pos += current_vel * dt + 0.5 * current_accel * dt * dt
 		var new_accel: Vector2 = get_gravity_at(current_pos, sources)
-		
-		# Velocity: v(t+dt) = v(t) + 0.5*(a(t) + a(t+dt))*dt
 		current_vel += 0.5 * (current_accel + new_accel) * dt
 		current_accel = new_accel
 		
 		points.append(current_pos)
 
-		# Check for collisions with any gravitational body
+		# Check for collisions
 		for source in sources:
 			if not source:
 				continue
-				
-			var collision_radius: float = 25.0  # Default
-			if source.has_method("get_radius"):
-				collision_radius = source.get_radius()
-			elif "radius" in source:
-				collision_radius = source.radius
-			
-			var distance_to_body: float = (current_pos - source.global_position).length()
-			if distance_to_body < collision_radius * 0.5:  # Small margin for collision
+			var collision_radius: float = source.get_radius() * 0.5
+			if (current_pos - source.global_position).length() < collision_radius:
 				return points
 
 	return points
@@ -164,39 +106,113 @@ func predict_trajectory_verlet(pos: Vector2, vel: Vector2, sources: Array, total
 func place_in_orbit(body: RigidBody2D, planet: Node2D, radius: float) -> void:
 	"""Place body in circular orbit around planet"""
 	body.global_position = planet.global_position + Vector2.LEFT * radius
-	
-	# Get planet mass
-	var planet_mass: float = 0.0
-	if "mass" in planet:
-		planet_mass = planet.mass
-	elif planet.has_method("get_mass"):
-		planet_mass = planet.get_mass()
-	
-	# Calculate circular orbital velocity
-	var speed: float = sqrt(GRAVITY_CONSTANT * planet_mass / radius)
+	var speed: float = sqrt(GRAVITY_CONSTANT * planet.get_mass() / radius)
 	body.linear_velocity = Vector2.UP * speed
-	
-	# Set angular velocity if supported
-	if body.has_method("set_angular_velocity"):
-		var angular_vel: float = speed / radius
-		body.angular_velocity = angular_vel
 
-# Helper function to get recommended orbital parameters for your scale
-func get_stable_orbit_params(planet_mass: float, desired_radius: float) -> Dictionary:
-	"""Get recommended parameters for stable orbits at 640x360 scale"""
-	var speed: float = sqrt(GRAVITY_CONSTANT * planet_mass / desired_radius)
-	var period: float = 2.0 * PI * sqrt(pow(desired_radius, 3) / (GRAVITY_CONSTANT * planet_mass))
+# === ORBITAL ANALYSIS WITH CACHING ===
+
+func should_update_analysis(ship_pos: Vector2, ship_vel: Vector2) -> bool:
+	"""Check if orbital analysis needs updating"""
+	var time_now = Time.get_unix_time_from_system()
+	var time_elapsed = time_now - _last_analysis_time
 	
-	return {
-		"orbital_speed": speed,
-		"orbital_period": period,
-		"recommended_ship_mass": 1.0,  # Light ships are easier to control
-		"safe_minimum_radius": 26.0,   # Just above surface for close orbits
-		"recommended_radius_range": Vector2(30.0, 120.0)  # From surface-skimming to distant
-	}
+	# Force update after max interval
+	if time_elapsed > MAX_ANALYSIS_INTERVAL:
+		return true
+	
+	# Skip if minimum interval hasn't passed
+	if time_elapsed < MIN_ANALYSIS_INTERVAL:
+		return false
+	
+	# Check for significant movement
+	var pos_delta = (ship_pos - _last_analysis_position).length()
+	var vel_delta = (ship_vel - _last_analysis_velocity).length()
+	
+	return pos_delta > POSITION_THRESHOLD or vel_delta > VELOCITY_THRESHOLD
+
+func update_orbital_analysis(ship: RigidBody2D, planets: Array) -> OrbitalData:
+	"""Update orbital analysis with smart caching"""
+	if not should_update_analysis(ship.global_position, ship.linear_velocity):
+		return _cached_orbital_data
+	
+	# Perform new analysis
+	_cached_orbital_data = analyze_orbit(ship.global_position, ship.linear_velocity, planets)
+	
+	# Update cache tracking
+	_last_analysis_position = ship.global_position
+	_last_analysis_velocity = ship.linear_velocity
+	_last_analysis_time = Time.get_unix_time_from_system()
+	
+	return _cached_orbital_data
+
+func get_cached_orbital_data() -> OrbitalData:
+	"""Get cached orbital data without triggering analysis"""
+	return _cached_orbital_data
+
+func analyze_orbit(pos: Vector2, vel: Vector2, sources: Array) -> OrbitalData:
+	"""Analyze orbital characteristics relative to primary body"""
+	var data := OrbitalData.new()
+	
+	# Find primary body (strongest gravitational influence)
+	var max_influence: float = 0.0
+	for body in sources:
+		if not body or not body.has_method("get_global_position"):
+			continue
+			
+		var dist: float = (pos - body.global_position).length()
+		var influence: float = body.get_mass() / (dist * dist)
+		if influence > max_influence:
+			max_influence = influence
+			data.primary = body
+	
+	if not data.primary:
+		return data
+	
+	# Calculate orbital parameters
+	var r: Vector2 = pos - data.primary.global_position
+	var dist: float = r.length()
+	var mu: float = GRAVITY_CONSTANT * data.primary.get_mass()
+	
+	# Specific orbital energy
+	data.energy = 0.5 * vel.length_squared() - mu / dist
+	
+	# Eccentricity calculation
+	var v_squared: float = vel.length_squared()
+	var r_dot_v: float = r.dot(vel)
+	var e_vec: Vector2 = ((v_squared - mu/dist) * r - r_dot_v * vel) / mu
+	data.eccentricity = e_vec.length()
+	
+	var body_radius: float = data.primary.get_radius()
+	
+	# Calculate periapsis for bound orbits
+	var periapsis: float = INF
+	if data.energy < 0 and data.eccentricity < 1.0:
+		var a: float = -mu / (2.0 * data.energy)
+		periapsis = a * (1.0 - data.eccentricity)
+	
+	# Classify orbital state
+	if data.energy >= 0:
+		data.state = OrbitalState.ESCAPE
+	elif periapsis < body_radius * CRASH_RADIUS_MULTIPLIER:
+		data.state = OrbitalState.DECAY
+	elif data.eccentricity < STABLE_ECCENTRICITY_THRESHOLD and dist > body_radius * STABLE_DISTANCE_MULTIPLIER:
+		data.state = OrbitalState.STABLE
+		data.is_stable = true
+	elif data.eccentricity < ELLIPTICAL_ECCENTRICITY_THRESHOLD and periapsis > body_radius * SAFE_PERIAPSIS_MULTIPLIER:
+		data.state = OrbitalState.ELLIPTICAL
+		data.is_stable = true
+	else:
+		data.state = OrbitalState.DECAY
+		
+	# Calculate orbital period for bound orbits
+	if data.energy < 0 and data.eccentricity < 1.0:
+		var a: float = -mu / (2.0 * data.energy)
+		data.period = 2.0 * PI * sqrt(pow(a, 3) / mu)
+	
+	return data
 
 func get_status_text(data: OrbitalData) -> String:
-	"""Generate status text for UI display"""
+	"""Generate orbital status display text"""
 	var status: String
 	match data.state:
 		OrbitalState.STABLE: 
