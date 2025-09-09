@@ -16,7 +16,7 @@ const CRASH_RADIUS_MULTIPLIER: float = 1.5
 const STABLE_DISTANCE_MULTIPLIER: float = 3.0
 const SAFE_PERIAPSIS_MULTIPLIER: float = 2.0
 
-# Analysis caching (built-in OrbitalAnalyzer functionality)
+# Analysis caching
 const POSITION_THRESHOLD: float = 5.0
 const VELOCITY_THRESHOLD: float = 10.0
 const MIN_ANALYSIS_INTERVAL: float = 0.1
@@ -42,7 +42,7 @@ var _last_analysis_time: float = 0.0
 func _ready():
 	_cached_orbital_data = OrbitalData.new()
 
-# === CORE PHYSICS FUNCTIONS ===
+# === CORE PHYSICS ===
 
 func get_gravity_at(pos: Vector2, sources: Array) -> Vector2:
 	"""Calculate gravitational acceleration at position"""

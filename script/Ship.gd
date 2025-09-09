@@ -29,7 +29,7 @@ func setup_particles():
 
 func _physics_process(delta):
 	handle_input(delta)
-	update_particles()	
+	update_particles()
 
 func handle_input(delta):
 	# Rotation

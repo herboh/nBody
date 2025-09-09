@@ -6,7 +6,6 @@ extends StaticBody2D
 func _ready():
 	pass
 
-# Consistent interface - always use these methods
 func get_radius() -> float:
 	return radius
 
