@@ -38,11 +38,16 @@ var _cached_orbital_data: OrbitalData
 var _last_analysis_position: Vector2
 var _last_analysis_velocity: Vector2
 var _last_analysis_time: float = 0.0
+var _game_time_accumulator: float = 0.0
 
 func _ready():
 	_cached_orbital_data = OrbitalData.new()
 
-# === CORE PHYSICS ===
+func _process(delta: float) -> void:
+	"""Accumulate game time for analysis timing"""
+	_game_time_accumulator += delta
+
+# === CORE PHYSICS FUNCTIONS ===
 
 func get_gravity_at(pos: Vector2, sources: Array) -> Vector2:
 	"""Calculate gravitational acceleration at position"""
@@ -113,8 +118,7 @@ func place_in_orbit(body: RigidBody2D, planet: Node2D, radius: float) -> void:
 
 func should_update_analysis(ship_pos: Vector2, ship_vel: Vector2) -> bool:
 	"""Check if orbital analysis needs updating"""
-	var time_now = Time.get_unix_time_from_system()
-	var time_elapsed = time_now - _last_analysis_time
+	var time_elapsed = _game_time_accumulator - _last_analysis_time
 	
 	# Force update after max interval
 	if time_elapsed > MAX_ANALYSIS_INTERVAL:
@@ -141,7 +145,7 @@ func update_orbital_analysis(ship: RigidBody2D, planets: Array) -> OrbitalData:
 	# Update cache tracking
 	_last_analysis_position = ship.global_position
 	_last_analysis_velocity = ship.linear_velocity
-	_last_analysis_time = Time.get_unix_time_from_system()
+	_last_analysis_time = _game_time_accumulator
 	
 	return _cached_orbital_data
 

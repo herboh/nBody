@@ -4,7 +4,7 @@ extends Line2D
 @export var prediction_time_fallback: float = 12.0
 @export var max_points: int = 600
 @export var adaptive_time_step: bool = true
-@export var update_interval: float = 0.002  # Made configurable
+@export var update_interval: float = 0.04
 
 const MAX_TRAJECTORY_DISTANCE: float = 1500.0
 const MAX_TRAJECTORY_TIME: float = 20.0
@@ -12,10 +12,6 @@ const MAX_TRAJECTORY_TIME: float = 20.0
 var ship: RigidBody2D
 var physics_world: Node
 var _update_timer: float = 0.0
-
-var _last_ship_position: Vector2
-var _last_ship_velocity: Vector2
-var _cached_path: PackedVector2Array
 
 const MOVEMENT_THRESHOLD: float = 3.0
 const VELOCITY_THRESHOLD: float = 15.0
@@ -34,9 +30,8 @@ func _process(delta: float):
 	if not ship or not physics_world:
 		return
 	
-	# Simple timer - update every 0.04 seconds regardless
 	_update_timer += delta
-	if _update_timer < 0.04:  # Or even 0.02 for more responsive
+	if _update_timer < update_interval:
 		return
 	_update_timer = 0.0
 	
@@ -46,11 +41,7 @@ func _process(delta: float):
 	if planets.is_empty():
 		return
 	
-	var data: OrbitalPhysics.OrbitalData = OrbitalPhysics.analyze_orbit(
-		ship.global_position, 
-		ship.linear_velocity, 
-		planets
-	)
+	var data = physics_world.get_current_orbital_data()	
 	
 	var horizon: float = min(prediction_time_fallback, MAX_TRAJECTORY_TIME)
 	if data and data.primary and data.period > 0.0:

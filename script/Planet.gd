@@ -4,8 +4,8 @@ extends StaticBody2D
 @export var radius: float = 50.0
 
 func _ready():
-	pass
-
+	add_to_group("planets")
+	
 func get_radius() -> float:
 	return radius
 

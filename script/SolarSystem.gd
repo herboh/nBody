@@ -31,8 +31,10 @@ func _physics_process(delta: float):
 
 func apply_gravitational_forces(delta: float):
 	var gravity_acceleration = OrbitalPhysics.get_gravity_at(ship.global_position, planets)
-	var impulse = gravity_acceleration * ship.mass * delta
-	ship.apply_central_impulse(impulse)
+	#gone back and forth on impulse or force, going to try force again
+	ship.apply_central_force(gravity_acceleration * ship.mass)	
+	#var impulse = gravity_acceleration * ship.mass * delta
+	#ship.apply_central_impulse(impulse)
 
 func update_orbital_analysis():
 	OrbitalPhysics.update_orbital_analysis(ship, planets)
@@ -42,7 +44,7 @@ func get_ship() -> RigidBody2D:
 	return ship
 
 func get_planets() -> Array[Node2D]:
-	return planets
-
+	return planets	
+	
 func get_current_orbital_data() -> OrbitalPhysics.OrbitalData:
 	return OrbitalPhysics.get_cached_orbital_data()
