@@ -1,0 +1,120 @@
+[gd_scene load_steps=17 format=3 uid="uid://bgkyqbfxst0s3"]
+
+[ext_resource type="Script" uid="uid://rc6ndq8l78hs" path="res://script/Planet.gd" id="1_56q34"]
+[ext_resource type="Texture2D" uid="uid://dnhj5mslbf8vp" path="res://assets/venusAnim.png" id="2_56q34"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_aagck"]
+atlas = ExtResource("2_56q34")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1gfrk"]
+atlas = ExtResource("2_56q34")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ob6hv"]
+atlas = ExtResource("2_56q34")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dtopv"]
+atlas = ExtResource("2_56q34")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uvqj7"]
+atlas = ExtResource("2_56q34")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y0rqe"]
+atlas = ExtResource("2_56q34")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x3bef"]
+atlas = ExtResource("2_56q34")
+region = Rect2(768, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xncl8"]
+atlas = ExtResource("2_56q34")
+region = Rect2(896, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uyrg8"]
+atlas = ExtResource("2_56q34")
+region = Rect2(1024, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a2tqn"]
+atlas = ExtResource("2_56q34")
+region = Rect2(1152, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g351q"]
+atlas = ExtResource("2_56q34")
+region = Rect2(1280, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_41feg"]
+atlas = ExtResource("2_56q34")
+region = Rect2(1408, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_uyhs0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_aagck")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_aagck")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1gfrk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ob6hv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dtopv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uvqj7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y0rqe")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x3bef")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xncl8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uyrg8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a2tqn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g351q")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_41feg")
+}],
+"loop": true,
+"name": &"spin",
+"speed": 12.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_g7ijo"]
+radius = 21.0238
+
+[node name="Venus" type="StaticBody2D"]
+script = ExtResource("1_56q34")
+mass = 300.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_uyhs0")
+animation = &"spin"
+autoplay = "idle"
+frame_progress = 0.00968101
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_g7ijo")

@@ -139,6 +139,7 @@ func update_orbital_analysis(ship: RigidBody2D, planets: Array) -> OrbitalData:
 	if not should_update_analysis(ship.global_position, ship.linear_velocity):
 		return _cached_orbital_data
 	
+	print("updating")
 	# Perform new analysis
 	_cached_orbital_data = analyze_orbit(ship.global_position, ship.linear_velocity, planets)
 	
@@ -231,7 +232,7 @@ func get_status_text(data: OrbitalData) -> String:
 			status = "ANALYZING..."
 	
 	if data.primary:
-		status += "\nPrimary: %s" % data.primary.name
+		status += "\nPrimary: %s" % data.primary.get_name()
 		if data.period > 0:
 			status += "\nPeriod: %.1fs" % data.period
 		status += "\nEccentricity: %.3f" % data.eccentricity

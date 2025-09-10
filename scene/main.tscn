@@ -1,11 +1,11 @@
 [gd_scene load_steps=7 format=3 uid="uid://d4ju3t7tn4p7n"]
 
-[ext_resource type="Script" uid="uid://tsiux4pale7m" path="res://script/SolarSystem.gd" id="1_0ha60"]
+[ext_resource type="Script" uid="uid://d3bh7tcpr3fjf" path="res://script/SolarSystem.gd" id="1_0ha60"]
 [ext_resource type="PackedScene" uid="uid://cag0o1rt8kaol" path="res://scene/ship.tscn" id="1_itxqv"]
 [ext_resource type="Texture2D" uid="uid://bpj60xeep7b5h" path="res://assets/starfield_tile.png" id="2_0ha60"]
-[ext_resource type="PackedScene" uid="uid://eqv106qo08fm" path="res://scene/planet.tscn" id="3_brvut"]
-[ext_resource type="Script" uid="uid://ccey22v3wjvvc" path="res://script/TrajectoryLine.gd" id="5_4j5ol"]
-[ext_resource type="Script" uid="uid://8v5m3eriooar" path="res://script/UI.gd" id="7_p1hux"]
+[ext_resource type="Script" uid="uid://bxc7x7oxut2nx" path="res://script/TrajectoryLine.gd" id="5_4j5ol"]
+[ext_resource type="PackedScene" uid="uid://c7myxs4orf8ke" path="res://scene/planets/mecury.tscn" id="6_p1hux"]
+[ext_resource type="Script" uid="uid://c826525873kpi" path="res://script/UI.gd" id="7_p1hux"]
 
 [node name="Main" type="Node2D"]
 
@@ -13,10 +13,10 @@
 script = ExtResource("1_0ha60")
 
 [node name="Backgroud" type="TextureRect" parent="SolarSystem"]
-clip_contents = true
-custom_minimum_size = Vector2(3000, 1600)
-offset_right = 256.0
-offset_bottom = 256.0
+offset_left = -442.0
+offset_top = -218.0
+offset_right = 4558.0
+offset_bottom = 2782.0
 scale = Vector2(0.25, 0.25)
 texture = ExtResource("2_0ha60")
 stretch_mode = 1
@@ -26,23 +26,11 @@ position = Vector2(101, 159)
 can_sleep = false
 linear_velocity = Vector2(0, 100)
 
-[node name="Planet" parent="SolarSystem" instance=ExtResource("3_brvut")]
-position = Vector2(471, 273)
-
 [node name="TrajectoryLine" type="Line2D" parent="SolarSystem"]
 script = ExtResource("5_4j5ol")
 
-[node name="Planet2" parent="SolarSystem" instance=ExtResource("3_brvut")]
-position = Vector2(144, 212)
-
-[node name="Planet3" parent="SolarSystem" instance=ExtResource("3_brvut")]
-position = Vector2(116, 40)
-
-[node name="Planet4" parent="SolarSystem" instance=ExtResource("3_brvut")]
-position = Vector2(633, 130)
-
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(320, 180)
+[node name="Mecury" parent="SolarSystem" instance=ExtResource("6_p1hux")]
+position = Vector2(262, 151)
 
 [node name="UI" type="CanvasLayer" parent="."]
 script = ExtResource("7_p1hux")
